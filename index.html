@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>x-RANK - Made in Kenya</title>
+<style>
+body{background:#0a0a12;color:#fff;font-family:monospace;padding:12px;margin:0}
+h1{color:#64ffda;font-size:20px;text-align:center}
+textarea{width:100%;height:280px;background:#111;font-size:16px;color:#fff;padding:10px;border:1px solid #333;border-radius:8px}
+button{padding:12px 16px;margin:4px 2px;border:0;border-radius:8px;font-weight:bold;color:#fff;cursor:pointer}
+#run{background:#00a86b}#paste{background:#2563eb}#copy{background:#9333ea}#ia{background:#e11d9a}#demo{background:#d97706}
+#out{background:#000;border:1px solid #333;padding:10px;min-height:140px;white-space:pre-wrap;color:#00ff88;margin-top:10px;border-radius:8px}
+</style></head><body>
+<h1>x-RANK STUDOS + IA 🇰🇪</h1>
+<textarea id="ed">let name = "Kenya"
+show("Hello from", name)
+let score = 85
+if score >= 50 {
+  show("You passed!")
+} else {
+  show("Try again")
+}
+for n = 1 to 3 {
+  show("Count:", n)
+}</textarea><br>
+<button id="run">RUN ▶</button><button id="paste">PASTE</button><button id="copy">COPY</button><button id="ia">ASK IA</button><button id="demo">DEMO</button>
+<div id="out">Press RUN...</div>
+<script>
+// Mini x-RANK in JS - same syntax as your Python version
+const IA = {
+  "loop":"for i = 1 to 5 {\n  show(i)\n}",
+  "function":"function greet(u) {\n  return \"Hello \" + u\n}",
+  "class":"class Dog {\n  let sound = \"Bark\"\n}",
+  "if":"if x > 10 {\n  show(\"Big\")\n} else {\n  show(\"Small\")\n}",
+  "binary":"Binary: 5 = 101"
+};
+function askIA(q){
+  q=q.toLowerCase();
+  for(let k in IA) if(q.includes(k)) return "[IA]: "+IA[k];
+  return "[IA]: Try loop, function, class, if, binary";
+}
+function runCode(code){
+  let out=[];
+  let vars={};
+  // Very simple runner for demo - handles let/show/for/if in v0.1
+  // For tonight's deployment, we show output via translation
+  try{
+    // Convert x-Rank to JS
+    let js = code
+      .replace(/let /g,'let ')
+      .replace(/show\(/g,'out.push(')
+      .replace(/for\s+(\w+)\s*=\s*(.+?)\s+to\s+(.+?)\s*\{/g,'for(let $1=$2; $1<=$3; $1++){')
+      .replace(/if\s+(.+?)\s*\{/g,'if($1){')
+      .replace(/function\s+(\w+)\s*\(([^)]*)\)/g,'function $1($2)')
+      .replace(/class\s+(\w+)/g,'class $1');
+    // Execute with out
+    let fn = new Function('out', js + '; return out;');
+    let res = fn(out);
+    return res.map(v=> String(v)).join("\n") || "[OK]";
+  }catch(e){ return "ERROR: "+e.message+"\n[IA HELP]: Check your { } - write } else { on ONE line"; }
+}
+document.getElementById('run').onclick=()=>{
+  document.getElementById('out').textContent = runCode(document.getElementById('ed').value);
+};
+document.getElementById('paste').onclick=async()=>{
+  try{ let t=await navigator.clipboard.readText(); if(t) document.getElementById('ed').value=t; }catch(e){ alert("Long-press in editor and Paste"); }
+};
+document.getElementById('copy').onclick=async()=>{
+  await navigator.clipboard.writeText(document.getElementById('ed').value); alert("Copied!");
+};
+document.getElementById('ia').onclick=()=>{
+  let q=prompt("Ask IA (offline): e.g. how do I write a loop?");
+  if(q) document.getElementById('out').textContent = askIA(q);
+};
+document.getElementById('demo').onclick=()=>{
+  document.getElementById('ed').value='let name = "Kenya"\nshow("Hello", name)\nfor n = 1 to 3 {\n  show(n)\n}';
+};
+</script></body></html>
